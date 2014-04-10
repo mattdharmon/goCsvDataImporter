@@ -4,12 +4,23 @@ import (
     "encoding/csv"
     "labix.org/v2/mgo"
     "labix.org/v2/mgo/bson"
+    "os"
     "fmt"
     "io"
-    "os"
 )
 
 func main() {
+
+    file, err := os.Open(os.Args[1])
+    if err != nil {
+        return
+    }
+    defer file.Close()
+    reader := csv.NewReader(file)
+    mongo(reader)
+}
+
+func mongo(reader *csv.Reader) {
     //set up the connection to mongodb.
     session, err := mgo.Dial("localhost")
     if err != nil {
@@ -22,13 +33,7 @@ func main() {
     //create the database
     c := session.DB("test").C("people")
 
-    file, err := os.Open("names.txt")
-    if err != nil {
-        fmt.Println("Error:", err)
-        return
-    }
-    defer file.Close()
-    reader := csv.NewReader(file)
+    //Build the columns.
     var fields []string
     firstFieldRead := 0
     for {
